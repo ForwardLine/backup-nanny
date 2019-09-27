@@ -27,7 +27,7 @@ class EmailClient(object):
                     'Body': {
                         'Html': {
                             'Charset': self.CHARSET,
-                            'Data': 'OpportunityFeeder {0} has experienced an issue. The app log recorded is: <br/><br/>{1}'.format(self.ENVIRONMENT, message),
+                            'Data': 'BackupNanny {0} has experienced an issue. The app log recorded is: <br/><br/>{1}'.format(self.ENVIRONMENT, message),
                         },
                     },
                     'Subject': {

@@ -17,8 +17,8 @@ cp -r *.py *.txt util vendor
 echo "Changing current working directory to vendor directory"
 cd vendor
 
-echo "Downloading dependencies into vendor directory"
-pip install --target=. -r requirements.txt
+#echo "Downloading dependencies into vendor directory"
+#pip install --target=. -r requirements.txt
 
 export artifact_name="opportunityfeeder-${date_stamp}.zip"
 echo "Creating new package ${artifact_name}"
