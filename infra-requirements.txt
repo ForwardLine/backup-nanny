@@ -1,0 +1,2 @@
+-e git+ssh://git@github.com/ForwardLine/fl-aws.git@release-next#egg=fl_aws
+

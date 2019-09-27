@@ -1,0 +1,12 @@
+**/*.swp
+**/*.swn
+**/*.swo
+**/*venv
+**/*__pycache__
+**/*.zip
+**/*dist
+**/*egg-info
+**/*eggs
+**/*.coverage
+**/*build
+**/*htmlcov

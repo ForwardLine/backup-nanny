@@ -1,0 +1,14 @@
+[report]
+
+exclude_lines =
+    if __name__ == .__main__.:
+    def main..:
+    Session()
+    get_args()
+
+omit =
+    setup*
+    tests/*
+    .eggs/*
+    venv/*
+    custom_coverage.py

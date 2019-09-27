@@ -1,0 +1,7 @@
+troposphere
+boto3
+awscli
+awacs
+requests
+nose
+coverage

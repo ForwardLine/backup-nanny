@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+date_stamp=$(date "+%Y.%m.%d.%T.%y")
+
+echo "Cleaning out prior .zip packages from current directory if present"
+rm *.zip
+
+echo "Cleaning out prior vendor directory if it exists"
+rm -rf vendor
+
+echo "Creating vendor directory"
+mkdir vendor
+
+echo "Moving files to vendor directory"
+cp -r *.py *.txt util vendor
+
+echo "Changing current working directory to vendor directory"
+cd vendor
+
+echo "Downloading dependencies into vendor directory"
+pip install --target=. -r requirements.txt
+
+export artifact_name="opportunityfeeder-${date_stamp}.zip"
+echo "Creating new package ${artifact_name}"
+zip -r ${artifact_name} *
+mv ${artifact_name} ../
+
+cd ..
+echo "Created ${artifact_name}"
+
