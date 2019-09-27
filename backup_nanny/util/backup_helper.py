@@ -53,8 +53,11 @@ class BackupHelper(object):
                 Resources=[image['ImageId']],
                 Tags=[{'Key': 'AMI-Backup', 'Value': 'True'},{'Key': 'Date', 'Value': date}])
             self.log.info('Tagged AMI {0}'.format(image['ImageId']))
-        except ClientError:
-            self.log.info('DryRun is enabled, no image created')
+        except ClientError as ce:
+            if ce.response['Error']['Code'] == 'DryRunOperation':
+                self.log.info('DryRun is enabled, no image created')
+            else:
+                self.log(ce)
         except Exception as e:
             self.log.info('failed to create AMI for {0} ({1})'.format(instance.name, instance.instance_id)) 
             self.log.info(e) 
