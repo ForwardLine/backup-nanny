@@ -41,13 +41,18 @@ class BackupHelper(object):
         try:
             date = datetime.datetime.now().strftime('%Y.%m.%d')
             self.log.info('Creating AMI for {0} ({1})'.format(instance.name, instance.instance_id))
-            self.ec2_client.create_image(
+            image = self.ec2_client.create_image(
                 DryRun=self.dry_run,
                 Description="DEVOPS-217 created via automated process. EC2 instance has ami_backup label set to 'true'",
                 InstanceId=instance.instance_id,
                 Name='--'.join([instance.name, date]),
                 NoReboot=True)
-            self.log.info('Created AMI for {0} ({1})'.format(instance.name, instance.instance_id))
+            self.log.info('Created AMI ({2}) for {0} ({1})'.format(instance.name, instance.instance_id, image['ImageId']))
+            self.ec2_client.create_tags(
+                DryRun=self.dry_run, 
+                Resources=[image['ImageId']],
+                Tags=[{'Key': 'AMI-Backup', 'Value': 'True'},{'Key': 'Date', 'Value': date}])
+            self.log.info('Tagged AMI {0}'.format(image['ImageId']))
         except ClientError:
             self.log.info('DryRun is enabled, no image created')
         except Exception as e:
