@@ -57,7 +57,7 @@ class BackupHelper(object):
             if ce.response['Error']['Code'] == 'DryRunOperation':
                 self.log.info('DryRun is enabled, no image created')
             else:
-                self.log(ce)
+                self.log.info(ce)
         except Exception as e:
             self.log.info('failed to create AMI for {0} ({1})'.format(instance.name, instance.instance_id)) 
             self.log.info(e) 
