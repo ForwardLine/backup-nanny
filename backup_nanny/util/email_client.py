@@ -32,7 +32,7 @@ class EmailClient(object):
                     },
                     'Subject': {
                         'Charset': self.CHARSET,
-                        'Data': 'OpportunityFeeder {0} alert'.format(self.ENVIRONMENT),
+                        'Data': 'BackupNanny {0} alert'.format(self.ENVIRONMENT),
                     },
                 },
                 Source='no-reply@forwardline.com'
