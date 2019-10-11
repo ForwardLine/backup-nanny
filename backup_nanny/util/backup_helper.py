@@ -64,7 +64,7 @@ class BackupHelper(object):
     def cleanup_old_ami(self, image):
         try:
             self.log.info('Deleting AMI for {0} ({1})'.format(image.name, image.image_id))
-            self.ec2_client.deregister_image(ImageIds=image.image_id, DryRun=self.dry_run)
+            self.ec2_client.deregister_image(ImageId=image.image_id, DryRun=self.dry_run)
             self.log.info('Deleted AMI for {0} ({1})'.format(image.name, image.image_id))
         except ClientError as ce:
             if ce.response['Error']['Code'] == 'DryRunOperation':
