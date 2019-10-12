@@ -47,7 +47,7 @@ class BackupHelper(object):
                     {'Name': 'tag-value', 'Values': self.AMI_BACKUP_VALUES}
                 ]
             )['Images']
-            self.log.info('found {0} images tagged for ami-backup'.format(len(aws_images))
+            self.log.info('found {0} images tagged for ami-backup'.format(len(aws_images)))
             for aws_image in aws_images:
                 image = Image(image_info=aws_image)
                 self.log.info('Image "{0}" ({1}) has creation date of {2}'.format(image.name, image.image_id, image.creation_date))
@@ -75,20 +75,20 @@ class BackupHelper(object):
             self.log.info('failed to delete AMI {0} ({1})'.format(image.name, image.image_id))
             self.log.info(e)
 
-    def cleanup_old_snapshots(self, snapshots)
+    def cleanup_old_snapshots(self, snapshots):
         for snapshot in snapshots:
             try:
                 self.log.info('Deleting snapshot {0}'.format(snapshot))
                 self.ec2_client.delete_snapshot(SnapshotId=snapshot, DryRun=self.dry_run)
                 self.log.info('Deleted snapshot {0}'.format(snapshot))
-        except ClientError as ce:
-            if ce.response['Error']['Code'] == 'DryRunOperation':
-                self.log.info('DryRun is enabled, snapshot not deleted')
-            else:
-                self.log.info(ce)
-        except Exception as e:
-            self.log.info('failed to delete snapshot {0}'.format(snapshot))
-            self.log.info(e)
+            except ClientError as ce:
+                if ce.response['Error']['Code'] == 'DryRunOperation':
+                    self.log.info('DryRun is enabled, snapshot not deleted')
+                else:
+                    self.log.info(ce)
+            except Exception as e:
+                self.log.info('failed to delete snapshot {0}'.format(snapshot))
+                self.log.info(e)
 
 
     def create_ami_backup(self, instance):
