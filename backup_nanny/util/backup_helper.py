@@ -56,10 +56,12 @@ class BackupHelper(object):
                 if time_since_now.days > image.ttl_days:
                     cleanup_images.append(image)
                     self.log.info('Image "{0}" ({1}) along with snapshots {2} will be deleted as it was created over {3} days ago'.format(image.name, image.image_id, image.snapshots, image.ttl_days))
+                else:
+                    self.log.info('Image "{0}" ({1}) will not be deleted as it was not created over {2} days ago'.format(image.name, image.image_id, image.ttl_days))
         except Exception as e:
             self.log.info('there was an error in the "get_backup_amis_for_cleanup" method. Returning empty list')
             self.log.info(e)
-            return cleanup_images
+        return cleanup_images
 
     def cleanup_old_ami(self, image):
         try:
@@ -90,7 +92,6 @@ class BackupHelper(object):
                 self.log.info('failed to delete snapshot {0}'.format(snapshot))
                 self.log.info(e)
 
-
     def create_ami_backup(self, instance):
         try:
             date = datetime.now().strftime('%Y.%m.%d')
@@ -116,8 +117,6 @@ class BackupHelper(object):
             self.log.info('failed to create AMI for {0} ({1})'.format(instance.name, instance.instance_id))
             self.log.info(e)
 
-
     def is_dry_run(self):
         return True if self.ENVIRONMENT.upper() not in 'PRD' else False
-
 
