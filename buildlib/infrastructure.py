@@ -26,7 +26,7 @@ class BackupNanny(TemplateBase):
         lambda_roles = []
 
         """--------------------
-        AMI Creator 
+        AMI Creator
         ---------------------"""
 
         """ AMI Creator role """
@@ -68,11 +68,60 @@ class BackupNanny(TemplateBase):
             targets=[ami_creator_target],
             state='ENABLED')
 
-        """ Grant CloudWatch Rule permission to invoke Master Lambda Function """
+        """ Grant CloudWatch Rule permission to invoke AMI Creator Lambda Function """
         ami_creator_permission = self.lambda_helper.create_invoke_permission_for_events(
             function_name=Ref(ami_creator_lambda),
             source_arn=GetAtt(ami_creator_rule, 'Arn'),
             name_prefix='AMICreator')
+
+        """--------------------
+        AMI Cleanup
+        ---------------------"""
+
+        """ AMI Cleanup role """
+        ami_cleanup_role = self.iam_helper.create_lambda_vpc_role(name_prefix='AMICleanup')
+        lambda_roles.append(ami_cleanup_role)
+
+        ami_cleanup_environment_variables = {
+            'EMAILS': Ref(alert_emails),
+            'SEND_EMAILS': 'TRUE',
+            'ENVIRONMENT': self.ENVIRONMENT,
+        }
+
+        """ AMI Cleanup Lambda Function """
+        ami_cleanup_lambda = self.lambda_helper.create_function(
+            name_prefix='AMICleanup',
+            code=lambda_code,
+            handler='ami_cleanup.handler',
+            timeout='20', # seconds
+            environment=ami_cleanup_environment_variables,
+            role=GetAtt(ami_cleanup_role, 'Arn'))
+
+        """ AMI Cleanup Policies """
+        ami_cleanup_lambda_policy = self.iam_helper.create_allow_policy(
+            name='AMICleanupPolicy',
+            actions=['ec2:DeregisterImage', 'ec2:DeleteSnapshot', 'ec2:DescribeImages'],
+            resources=['*'])
+        ami_cleanup_policy = self.iam_helper.create_policy_roles_type(
+            document=ami_cleanup_lambda_policy,
+            roles=[Ref(ami_cleanup_role)],
+            name_prefix='AMICleanup')
+
+        """ CloudWatch Rule with target to trigger AMI Cleanup Lambda """
+        ami_cleanup_target = self.events_helper.create_target(
+            arn=GetAtt(ami_cleanup_lambda, 'Arn'),
+            target_id='AMICleanupCron')
+        ami_cleanup_rule = self.events_helper.create_cron_rule(
+            name_prefix='AMICleanup',
+            schedule_expression='cron(0 8 ? * SAT *)',
+            targets=[ami_cleanup_target],
+            state='ENABLED')
+
+        """ Grant CloudWatch Rule permission to invoke AMI Creator Lambda Function """
+        ami_cleanup_permission = self.lambda_helper.create_invoke_permission_for_events(
+            function_name=Ref(ami_cleanup_lambda),
+            source_arn=GetAtt(ami_cleanup_rule, 'Arn'),
+            name_prefix='AMICleanup')
 
 
         """-------------------
