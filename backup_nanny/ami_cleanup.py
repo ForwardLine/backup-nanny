@@ -10,8 +10,8 @@ def handler(event, context):
     main(event)
 
 def main(event):
+    log = Log()
     try:
-        log = Log()
         backup_helper = BackupHelper(log=log)
         backup_amis = backup_helper.get_backup_amis_for_cleanup()
         for backup_ami in backup_amis:
