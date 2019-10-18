@@ -4,13 +4,14 @@ from sys import exit
 
 class EmailClient(object):
 
-    EMAILS = os.environ['EMAILS']
-    ENVIRONMENT = os.environ['ENVIRONMENT']
-    SEND_EMAILS = os.environ['SEND_EMAILS'].upper()
     CHARSET = 'utf-8'
 
     def __init__(self, session=None):
         self.client = self.get_client(session)
+        self.EMAILS = os.environ['TARGET_EMAILS']
+        self.SOURCE_EMAIL = os.environ['SOURCE_EMAIL']
+        self.ENVIRONMENT = os.environ['ENVIRONMENT']
+        self.SEND_EMAILS = os.environ['IS_SEND_EMAILS_ENABLED'].upper()
 
     def get_client(self, session=None):
         if not session:
@@ -35,6 +36,6 @@ class EmailClient(object):
                         'Data': 'BackupNanny {0} alert'.format(self.ENVIRONMENT),
                     },
                 },
-                Source='no-reply@forwardline.com'
+                Source=self.SOURCE_EMAIL
             )
 

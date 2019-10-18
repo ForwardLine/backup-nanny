@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
 import os
+
 from troposphere import GetAtt, Ref, Join, ImportValue
+from dotenv import load_dotenv
+if 'CODEBUILD_BUILD_ID' not in os.environ:
+    load_dotenv()
 
 from fl_aws.helpers.template_base import TemplateBase
 
@@ -10,6 +14,15 @@ class BackupNanny(TemplateBase):
 
     PROJECT = 'BackupNanny'
     ENVIRONMENT = os.environ['ENVIRONMENT']
+    PRODUCTION_ENVIRONMENT = os.environ['PRODUCTION_ENVIRONMENT']
+    BACKUP_AMI_KEY = os.environ['BACKUP_AMI_KEY']
+    BACKUP_AMI_VALUE = os.environ['BACKUP_AMI_VALUE']
+    BACKUP_AMI_SCHEDULE_EXPRESSION = os.environ['BACKUP_AMI_SCHEDULE_EXPRESSION']
+    CLEANUP_AMI_SCHEDULE_EXPRESSION = os.environ['CLEANUP_AMI_SCHEDULE_EXPRESSION']
+    IS_SEND_EMAILS_ENABLED = os.environ['IS_SEND_EMAILS_ENABLED']
+    TARGET_EMAILS = os.environ['TARGET_EMAILS']
+    SOURCE_EMAIL = os.environ['SOURCE_EMAIL']
+    TTL_AMI_CLEANUP = os.environ['TTL_AMI_CLEANUP']
 
     def init_template(self):
 
@@ -35,7 +48,7 @@ class BackupNanny(TemplateBase):
 
         ami_creator_environment_variables = {
             'EMAILS': Ref(alert_emails),
-            'SEND_EMAILS': 'TRUE',
+            'SEND_EMAILS': self.IS_SEND_EMAILS_ENABLED,
             'ENVIRONMENT': self.ENVIRONMENT,
         }
 
@@ -64,7 +77,7 @@ class BackupNanny(TemplateBase):
             target_id='AMICreatorCron')
         ami_creator_rule = self.events_helper.create_cron_rule(
             name_prefix='AMICreator',
-            schedule_expression='cron(0 8 ? * SAT *)',
+            schedule_expression=self.BACKUP_AMI_SCHEDULE_EXPRESSION,
             targets=[ami_creator_target],
             state='ENABLED')
 
@@ -84,7 +97,7 @@ class BackupNanny(TemplateBase):
 
         ami_cleanup_environment_variables = {
             'EMAILS': Ref(alert_emails),
-            'SEND_EMAILS': 'TRUE',
+            'SEND_EMAILS': self.IS_SEND_EMAILS_ENABLED,
             'ENVIRONMENT': self.ENVIRONMENT,
         }
 
@@ -113,7 +126,7 @@ class BackupNanny(TemplateBase):
             target_id='AMICleanupCron')
         ami_cleanup_rule = self.events_helper.create_cron_rule(
             name_prefix='AMICleanup',
-            schedule_expression='cron(0 8 ? * SAT *)',
+            schedule_expression=self.CLEANUP_AMI_SCHEDULE_EXPRESSION,
             targets=[ami_cleanup_target],
             state='ENABLED')
 
@@ -123,22 +136,9 @@ class BackupNanny(TemplateBase):
             source_arn=GetAtt(ami_cleanup_rule, 'Arn'),
             name_prefix='AMICleanup')
 
-
         """-------------------
         Shared Resources
         -------------------"""
-
-        """ Policies for SSM """
-        ssm_lambda_policy = self.iam_helper.create_allow_policy(
-            name='ssmLambdaPolicy',
-            actions=['ssm:GetParameters'],
-            resources=[
-                Join('', ['arn:aws:ssm:', Ref('AWS::Region'), ':', Ref('AWS::AccountId'), ':', 'parameter/', Ref('AWS::StackName'), '/*'])
-            ])
-        self.iam_helper.create_policy_roles_type(
-            document=ssm_lambda_policy,
-            roles=[Ref(role) for role in lambda_roles],
-            name_prefix='SSM')
 
         """ Policies for SES """
         ses_lambda_policy = self.iam_helper.create_allow_policy(

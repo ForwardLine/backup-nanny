@@ -5,3 +5,4 @@ awacs
 requests
 nose
 coverage
+python-dotenv

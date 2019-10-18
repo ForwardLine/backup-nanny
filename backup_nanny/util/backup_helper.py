@@ -10,22 +10,23 @@ from util.image import Image
 
 class BackupHelper(object):
 
-    AMI_BACKUP_KEYS = ['ami-backup', 'AMI-Backup']
-    AMI_BACKUP_VALUES = ['true', 'True']
-    ENVIRONMENT = os.environ.get('ENVIRONMENT', 'LOCAL')
 
     def __init__(self, log):
         self.ec2_client = ClientHelper.get_client('ec2')
-        self.dry_run = self.is_dry_run()
         self.log = log
+        self.BACKUP_AMI_KEYS = [os.environ['BACKUP_AMI_KEY']]
+        self.BACKUP_AMI_VALUES = [os.environ['BACKUP_AMI_VALUE']]
+        self.PRODUCTION_ENVIRONMENT = os.environ['PRODUCTION_ENVIRONMENT']
+        self.ENVIRONMENT = os.environ.get('ENVIRONMENT', 'LOCAL')
+        self.dry_run = self.is_dry_run()
 
     def get_instances_for_ami_backup(self):
         instances = []
         try:
             reservations_for_backup = self.ec2_client.describe_instances(
                 Filters=[
-                    {'Name': 'tag-key', 'Values': self.AMI_BACKUP_KEYS},
-                    {'Name': 'tag-value', 'Values': self.AMI_BACKUP_VALUES}
+                    {'Name': 'tag-key', 'Values': self.BACKUP_AMI_KEYS},
+                    {'Name': 'tag-value', 'Values': self.BACKUP_AMI_VALUES}
                 ]
             )['Reservations']
             self.log.info('found {0} instances tagged for ami-backup'.format(len(reservations_for_backup)))
@@ -43,8 +44,8 @@ class BackupHelper(object):
             cleanup_images = []
             aws_images = self.ec2_client.describe_images(
                 Filters=[
-                    {'Name': 'tag-key', 'Values': self.AMI_BACKUP_KEYS},
-                    {'Name': 'tag-value', 'Values': self.AMI_BACKUP_VALUES}
+                    {'Name': 'tag-key', 'Values': self.BACKUP_AMI_KEYS},
+                    {'Name': 'tag-value', 'Values': self.BACKUP_AMI_VALUES}
                 ]
             )['Images']
             self.log.info('found {0} images tagged for ami-backup'.format(len(aws_images)))
@@ -98,7 +99,7 @@ class BackupHelper(object):
             self.log.info('Creating AMI for {0} ({1})'.format(instance.name, instance.instance_id))
             image = self.ec2_client.create_image(
                 DryRun=self.dry_run,
-                Description="DEVOPS-217 created via automated process. EC2 instance has ami_backup label set to 'true'",
+                Description="BackupNanny - created via automated process. EC2 instance has {0} label set to {1}".format(os.environ['BACKUP_AMI_KEY'], os.environ['BACKUP_AMI_VALUE']),
                 InstanceId=instance.instance_id,
                 Name='--'.join([instance.name, date]),
                 NoReboot=True)
@@ -106,7 +107,7 @@ class BackupHelper(object):
             self.ec2_client.create_tags(
                 DryRun=self.dry_run,
                 Resources=[image['ImageId']],
-                Tags=[{'Key': 'AMI-Backup', 'Value': 'True'},{'Key': 'Date', 'Value': date}])
+                Tags=[{'Key': self.BACKUP_AMI_KEYS[0], 'Value': self.BACKUP_AMI_VALUES[0]}])
             self.log.info('Tagged AMI {0}'.format(image['ImageId']))
         except ClientError as ce:
             if ce.response['Error']['Code'] == 'DryRunOperation':
@@ -118,5 +119,5 @@ class BackupHelper(object):
             self.log.info(e)
 
     def is_dry_run(self):
-        return True if self.ENVIRONMENT.upper() not in 'PRD' else False
+        return True if self.ENVIRONMENT.upper() not in self.PRODUCTION_ENVIRONMENT.upper() else False
 

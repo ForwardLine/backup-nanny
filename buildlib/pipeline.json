@@ -1,6 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Parameters": {
+    "GithubAccount": {
+        "Type": "String",
+        "Description": "The Github account or Organmization you forked this BackupNanny project to"
+    },
     "Repo": {
         "Type": "String"
     },
@@ -10,21 +14,76 @@
     "FLAWSBucket": {
         "Type": "String"
     },
-    "ENVIRONMENT": {
-        "Type": "String"
+    "Environment": {
+        "Type": "String",
+        "Description": "Current environment for this version of BackupNanny"
+    },
+    "BackupAmiKey": {
+        "Type": "String",
+        "Description": "Tag Key that should be added to EC2 instance that AMICreaor and AMICleanup Lambda functions will query for",
+        "Default": "AMI-Backup"
+    },
+    "BackupAmiValue": {
+        "Type": "String",
+        "Description": "Tag Value that should be added to EC2 instance that AMICreaor and AMICleanup Lambda functions will query for",
+        "Default": "True"
+    },
+    "BackupAmiScheduleExpression": {
+        "Type": "String",
+        "Description": "Cron or Rate expression to use by AMIBackup Lambda function. Default set to Saturday 1:00 am Pacific Daylight Time. For reference: https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html",
+        "Default": "cron(0 8 ? * SAT *)"
+    },
+    "CleanupAmiScheduleExpression": {
+        "Type": "String",
+        "Description": "Cron or Rate expression to use by AMICleanup Lambda function. Default set to Saturday 1:00 am Pacific Daylight Time. For reference: https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html",
+        "Default": "cron(0 8 ? * SAT *)"
+    },
+    "ProductionEnvironment": {
+        "Type": "String",
+        "Description": "Current environment for this version of BackupNanny"
     },
     "PAT": {
         "Type": "String",
+        "Description": "Github Personal Access Token. This is used to generate a webhook for the Pipeline so that changes to your repo will trigger the pipeline to release the change",
         "NoEcho": true
     },
     "ApplicationName": {
       "Type": "String",
-      "Description": "Enter the name of your application"
+      "Description": "Enter the name of your application",
+      "Default": "BackupNanny"
     },
     "CodeBuildImage": {
       "Default": "aws/codebuild/python:3.7.1",
       "Type": "String",
       "Description": "Name of codebuild image to use."
+    },
+    "IsSendEmailsEnabled": {
+      "Description": "if this is set to \"True\" then emails will be sent when errors occur via SES",
+      "Type": "String",
+      "Default": "True"
+    },
+    "TargetEmails": {
+      "Description": "Comma delimited string of emails to send emails to when problems occur e.g. email1@test.com,email2@test.com",
+      "Type": "String"
+    },
+    "SourceEmail": {
+      "Description": "AWS SES validated email in your AWS account to send the alerts as",
+      "Type": "String"
+    },
+    "TTLAmiCleanup": {
+      "Description": "Mumber of days a BackupNanny backed-up AMI and set of snapshots should live. If more days have passed then this number, the AMI and Snapshots be deleted next time the CLEANUP_AMI Lambda function runs. Default is set to a fortnight, (two weeks).",
+      "Type": "String",
+      "Default": "14"
+    },
+    "CreateAmiScheduleExpression": {
+      "Description": "cron or rate AWS expression. E.g. cron(0 8 ? * SAT *) will run every Saturday at 1:00 am Pacific time",
+      "Type": "String",
+      "Default": "cron(0 8 ? * SAT *)"
+    },
+    "CleanupAmiScheduleExpression": {
+      "Description": "cron or rate AWS expression. E.g. cron(0 8 ? * SAT *) will run every Saturday at 1:00 am Pacific time",
+      "Type": "String",
+      "Default": "cron(0 8 ? * SAT *)"
     }
   },
   "Resources": {
@@ -82,7 +141,7 @@
                     "ssm:GetParameters"
                   ],
                   "Resource": {
-                    "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ApplicationName}Application-${ENVIRONMENT}/*"
+                    "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ApplicationName}Application-${Environment}/*"
                   },
                   "Effect": "Allow"
             }
@@ -117,19 +176,73 @@
             {
               "Name": "STACK_NAME",
               "Value": {
-                "Fn::Sub": "${ApplicationName}-${ENVIRONMENT}"
+                "Fn::Sub": "${ApplicationName}-${Environment}"
+              }
+            },
+            {
+              "Name": "PRODUCTION_ENVIRONMENT",
+              "Value": {
+                "Ref": "ProductionEnvironment"
+              }
+            },
+            {
+              "Name": "BACKUP_AMI_KEY",
+              "Value": {
+                "Ref": "BackupAmiKey"
+              }
+            },
+            {
+              "Name": "BACKUP_AMI_VALUE",
+              "Value": {
+                "Ref": "BackupAmiValue"
+              }
+            },
+            {
+              "Name": "BACKUP_AMI_SCHEDULE_EXPRESSION",
+              "Value": {
+                "Ref": "BackupAmiScheduleExpression"
+              }
+            },
+            {
+              "Name": "CLEANUP_AMI_SCHEDULE_EXPRESSION",
+              "Value": {
+                "Ref": "CleanupAmiScheduleExpression"
+              }
+            },
+            {
+              "Name": "TTL_AMI_CLEANUP",
+              "Value": {
+                "Ref": "TTLAmiCleanup"
+              }
+            },
+            {
+              "Name": "IS_SEND_EMAILS_ENABLED",
+              "Value": {
+                "Ref": "IsSendEmailsEnabled"
+              }
+            },
+            {
+              "Name": "TARGET_EMAILS",
+              "Value": {
+                "Ref": "TargetEmails"
+              }
+            },
+            {
+              "Name": "SOURCE_EMAIL",
+              "Value": {
+                "Ref": "SourceEmail"
               }
             },
             {
               "Name": "ENVIRONMENT",
               "Value": {
-                "Ref": "ENVIRONMENT"
+                "Ref": "Environment"
               }
             }
           ]
         },
         "Name": {
-          "Fn::Sub": "${ApplicationName}Build-${ENVIRONMENT}"
+          "Fn::Sub": "${ApplicationName}Build-${Environment}"
         },
         "ServiceRole": {
           "Fn::GetAtt": "CodeBuildRole.Arn"
@@ -153,7 +266,7 @@
       "Type": "AWS::CodePipeline::Pipeline",
       "Properties": {
         "Name": {
-          "Fn::Sub": "${ApplicationName}Pipeline-${ENVIRONMENT}"
+          "Fn::Sub": "${ApplicationName}Pipeline-${Environment}"
         },
         "ArtifactStore": {
           "Type": "S3",
@@ -176,7 +289,9 @@
                   "Provider": "GitHub"
                 },
                 "Configuration": {
-                  "Owner": "ForwardLine",
+                  "Owner": {
+                    "Ref": "GithubAccount"
+                  },
                   "Repo": {
                     "Ref": "Repo"
                   },
@@ -247,14 +362,14 @@
                 "Configuration": {
                   "ActionMode": "CHANGE_SET_REPLACE",
                   "ChangeSetName": {
-                    "Fn::Sub": "${ApplicationName}-${ENVIRONMENT}-ChangeSet"
+                    "Fn::Sub": "${ApplicationName}-${Environment}-ChangeSet"
                   },
                   "RoleArn": {
                     "Fn::GetAtt": "CFNDeployRole.Arn"
                   },
                   "Capabilities": "CAPABILITY_IAM",
                   "StackName": {
-                    "Fn::Sub": "${ApplicationName}-${ENVIRONMENT}"
+                    "Fn::Sub": "${ApplicationName}-${Environment}"
                   },
                   "TemplatePath": "CompiledCFNTemplate::template.json"
                 },
@@ -275,11 +390,11 @@
                 },
                 "Configuration": {
                   "StackName": {
-                    "Fn::Sub": "${ApplicationName}-${ENVIRONMENT}"
+                    "Fn::Sub": "${ApplicationName}-${Environment}"
                   },
                   "ActionMode": "CHANGE_SET_EXECUTE",
                   "ChangeSetName": {
-                    "Fn::Sub": "${ApplicationName}-${ENVIRONMENT}-ChangeSet"
+                    "Fn::Sub": "${ApplicationName}-${Environment}-ChangeSet"
                   },
                   "OutputFileName": "StackOutputs.json"
                 },
