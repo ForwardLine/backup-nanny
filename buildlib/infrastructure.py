@@ -50,6 +50,13 @@ class BackupNanny(TemplateBase):
             'EMAILS': Ref(alert_emails),
             'SEND_EMAILS': self.IS_SEND_EMAILS_ENABLED,
             'ENVIRONMENT': self.ENVIRONMENT,
+            'PRODUCTION_ENVIRONMENT': self.PRODUCTION_ENVIRONMENT,
+            'BACKUP_AMI_KEY': self.BACKUP_AMI_KEY,
+            'BACKUP_AMI_VALUE': self.BACKUP_AMI_VALUE,
+            'TTL_AMI_CLEANUP': self.TTL_AMI_CLEANUP,
+            'IS_SEND_EMAILS_ENABLED': self.IS_SEND_EMAILS_ENABLED,
+            'TARGET_EMAILS': self.TARGET_EMAILS,
+            'SOURCE_EMAIL': self.SOURCE_EMAIL,
         }
 
         """ AMI Creator Lambda Function """
@@ -99,6 +106,13 @@ class BackupNanny(TemplateBase):
             'EMAILS': Ref(alert_emails),
             'SEND_EMAILS': self.IS_SEND_EMAILS_ENABLED,
             'ENVIRONMENT': self.ENVIRONMENT,
+            'PRODUCTION_ENVIRONMENT': self.PRODUCTION_ENVIRONMENT,
+            'BACKUP_AMI_KEY': self.BACKUP_AMI_KEY,
+            'BACKUP_AMI_VALUE': self.BACKUP_AMI_VALUE,
+            'TTL_AMI_CLEANUP': self.TTL_AMI_CLEANUP,
+            'IS_SEND_EMAILS_ENABLED': self.IS_SEND_EMAILS_ENABLED,
+            'TARGET_EMAILS': self.TARGET_EMAILS,
+            'SOURCE_EMAIL': self.SOURCE_EMAIL,
         }
 
         """ AMI Cleanup Lambda Function """

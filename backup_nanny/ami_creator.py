@@ -10,8 +10,8 @@ def handler(event, context):
     main(event)
 
 def main(event):
+    log = Log()
     try:
-        log = Log()
         backup_helper = BackupHelper(log=log)
         instances = backup_helper.get_instances_for_ami_backup()
         for instance in instances:

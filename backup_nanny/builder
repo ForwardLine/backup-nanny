@@ -20,7 +20,7 @@ cd vendor
 echo "Downloading dependencies into vendor directory"
 pip install --target=. -r requirements.txt
 
-export artifact_name="opportunityfeeder-${date_stamp}.zip"
+export artifact_name="backupnanny-${date_stamp}.zip"
 echo "Creating new package ${artifact_name}"
 zip -r ${artifact_name} *
 mv ${artifact_name} ../
