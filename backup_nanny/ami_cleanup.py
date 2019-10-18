@@ -1,5 +1,6 @@
-from util.env_setter import EnvSetter
-EnvSetter.run()
+#!/usr/bin/env python
+
+from dotenv import load_dotenv
 
 from util.log import Log
 from util.backup_helper import BackupHelper
@@ -22,4 +23,5 @@ def main(event):
     return True
 
 if __name__ == '__main__':
+    load_dotenv()
     main('local')
