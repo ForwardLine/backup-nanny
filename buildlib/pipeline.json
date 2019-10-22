@@ -16,6 +16,10 @@
         "Type": "String",
         "Description": "Current environment for this version of BackupNanny"
     },
+    "StackName": {
+        "Type": "String",
+        "Description": "Name of the application stack that will manange AWS Resources (Lambda, CloudWatch Event Rules, IAM)"
+    },
     "BackupAmiKey": {
         "Type": "String",
         "Description": "Tag Key that should be added to EC2 instance that AMICreaor and AMICleanup Lambda functions will query for",
@@ -351,14 +355,14 @@
                 "Configuration": {
                   "ActionMode": "CHANGE_SET_REPLACE",
                   "ChangeSetName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}-ChangeSet"
+                    "Fn::Sub": "${StackName}-ChangeSet"
                   },
                   "RoleArn": {
                     "Fn::GetAtt": "CFNDeployRole.Arn"
                   },
                   "Capabilities": "CAPABILITY_IAM",
                   "StackName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}"
+                    "Ref": "StackName"
                   },
                   "TemplatePath": "CompiledCFNTemplate::template.json"
                 },
@@ -379,11 +383,11 @@
                 },
                 "Configuration": {
                   "StackName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}"
+                    "Ref": "StackName"
                   },
                   "ActionMode": "CHANGE_SET_EXECUTE",
                   "ChangeSetName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}-ChangeSet"
+                    "Fn::Sub": "${StackName}-ChangeSet"
                   },
                   "OutputFileName": "StackOutputs.json"
                 },

@@ -41,6 +41,6 @@ setup(
     py_modules = ['deploy_nanny', 'buildlib'],
     entry_points='''
         [console_scripts]
-        deploy_nanny=deploy_nanny:cli
+        deploy=deploy_nanny:cli
     '''
 )

@@ -25,7 +25,7 @@ class CloudformationHelper(object):
         try:
             return self.client.describe_stacks(StackName=stack_name)['Stacks'][0]
         except Exception as e:
-            logging.info('stack info not found for: {0}.'.format(stack_name))
+            logging.info('stack info not found for: {0}'.format(stack_name))
             logging.debug(e)
             return False
 
@@ -82,7 +82,7 @@ class CloudformationHelper(object):
                 return False
             stack_status = stack_info['StackStatus']
             if stack_status in self.COMPLETE_STATES:
-                logging.info('Stack successfully update/created')
+                logging.info('Stack has been successfully updated/created')
                 return True
             if stack_status in self.FAILED_STATES:
                 return False

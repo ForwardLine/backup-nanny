@@ -8,13 +8,13 @@ from buildlib.helpers.parameter import Parameter
 
 class NannyDeployer(object):
 
-    def __init__(self, stack_name, region, use_previous_value=False, session=None):
+    def __init__(self, region=None, use_previous_value=False, session=None):
         self.use_previous_value = use_previous_value
-        self.stack_name = stack_name
+        self.pipeline_stack_name = os.environ['PIPELINE_STACK_NAME']
         self.region = region
         self.template_json = None
         self.parameters = None
-        self.cloudformation_helper = CloudformationHelper(session=session)
+        self.cloudformation_helper = CloudformationHelper(session=session, region=region)
 
     def deploy(self):
         with open('buildlib/pipeline.json', 'r') as fb:
@@ -23,14 +23,14 @@ class NannyDeployer(object):
         self.create_or_update_stack()
 
     def create_or_update_stack(self):
-        if self.cloudformation_helper.get_stack_info(stack_name=self.stack_name):
+        if self.cloudformation_helper.get_stack_info(stack_name=self.pipeline_stack_name):
             logging.info('Use previous value is set to: {0}'.format(self.use_previous_value))
             parameters = self.get_parameters(use_previous_value=self.use_previous_value)
-            self.cloudformation_helper.update_stack(stack_name=self.stack_name, template_body=self.template_json, parameters=parameters)
+            self.cloudformation_helper.update_stack(stack_name=self.pipeline_stack_name, template_body=self.template_json, parameters=parameters)
         else:
             parameters = self.get_parameters(use_previous_value=False)
-            self.cloudformation_helper.create_stack(self.stack_name, self.template_json, parameters)
-        self.cloudformation_helper.stack_was_created_successfully(stack_name=self.stack_name)
+            self.cloudformation_helper.create_stack(stack_name=self.pipeline_stack_name, template_body=self.template_json, parameters=parameters)
+        self.cloudformation_helper.stack_was_created_successfully(stack_name=self.pipeline_stack_name)
 
     def get_parameters(self, use_previous_value):
         parameters = []
