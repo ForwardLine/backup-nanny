@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 if 'CODEBUILD_BUILD_ID' not in os.environ:
     load_dotenv()
 
-from fl_aws.helpers.template_base import TemplateBase
+from buildlib.helpers.template_base import TemplateBase
 
 
 class BackupNanny(TemplateBase):
@@ -26,12 +26,9 @@ class BackupNanny(TemplateBase):
 
     def init_template(self):
 
-        """ Parameters """
-        alert_emails = self.create_ssm_parameter(name='AlertEmailsParameter')
-
         """ Build variables """
         bucket = os.environ.get('APP_BUCKET', 'default-bucket-name')
-        bucket_artifact = os.environ.get('ARTIFACT_NAME', 'default-bucket-name')
+        bucket_artifact = os.environ.get('ARTIFACT_NAME', 'default-bucket-artifact')
 
         """ Lambda code """
         lambda_code = self.lambda_helper.create_bucket_code(bucket=bucket, key=bucket_artifact)
@@ -43,11 +40,11 @@ class BackupNanny(TemplateBase):
         ---------------------"""
 
         """ AMI Creator role """
-        ami_creator_role = self.iam_helper.create_lambda_vpc_role(name_prefix='AMICreator')
+        ami_creator_role = self.iam_helper.create_lambda_role(name_prefix='AMICreator')
         lambda_roles.append(ami_creator_role)
 
         ami_creator_environment_variables = {
-            'EMAILS': Ref(alert_emails),
+            'EMAILS': self.TARGET_EMAILS,
             'SEND_EMAILS': self.IS_SEND_EMAILS_ENABLED,
             'ENVIRONMENT': self.ENVIRONMENT,
             'PRODUCTION_ENVIRONMENT': self.PRODUCTION_ENVIRONMENT,
@@ -99,11 +96,11 @@ class BackupNanny(TemplateBase):
         ---------------------"""
 
         """ AMI Cleanup role """
-        ami_cleanup_role = self.iam_helper.create_lambda_vpc_role(name_prefix='AMICleanup')
+        ami_cleanup_role = self.iam_helper.create_lambda_role(name_prefix='AMICleanup')
         lambda_roles.append(ami_cleanup_role)
 
         ami_cleanup_environment_variables = {
-            'EMAILS': Ref(alert_emails),
+            'EMAILS': self.TARGET_EMAILS,
             'SEND_EMAILS': self.IS_SEND_EMAILS_ENABLED,
             'ENVIRONMENT': self.ENVIRONMENT,
             'PRODUCTION_ENVIRONMENT': self.PRODUCTION_ENVIRONMENT,
