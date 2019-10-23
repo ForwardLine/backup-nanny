@@ -2,6 +2,8 @@ import logging
 from sys import exit
 import time
 
+from botocore.exceptions import ClientError
+
 from buildlib.helpers.client_helper import ClientHelper
 
 
@@ -51,6 +53,12 @@ class CloudformationHelper(object):
                 **stack_parameters
             )['StackId']
             self.is_creating = True
+        except ClientError as ce:
+            if ce.response['Error']['Code'] == 'ValidationError':
+                logging.error(ce.response['Error']['Message'])
+            else:
+                logging.info(ce)
+            exit()
         except Exception as e:
             logging.error('Failed to create stack {0}'.format(stack_name), e)
             exit()
@@ -68,6 +76,12 @@ class CloudformationHelper(object):
                 **stack_parameters
             )['StackId']
             self.is_creating = True
+        except ClientError as ce:
+            if ce.response['Error']['Code'] == 'ValidationError':
+                logging.error(ce.response['Error']['Message'])
+            else:
+                logging.info(ce)
+            exit()
         except Exception as e:
             logging.error('Failed to update stack {0}'.format(stack_name), e)
             exit()
