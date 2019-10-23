@@ -6,17 +6,19 @@
         "Description": "The Github account or Organmization you forked this BackupNanny project to"
     },
     "Repo": {
-        "Type": "String"
+        "Type": "String",
+        "Default": "backup-nanny"
     },
     "Branch": {
-        "Type": "String"
-    },
-    "FLAWSBucket": {
         "Type": "String"
     },
     "Environment": {
         "Type": "String",
         "Description": "Current environment for this version of BackupNanny"
+    },
+    "StackName": {
+        "Type": "String",
+        "Description": "Name of the application stack that will manange AWS Resources (Lambda, CloudWatch Event Rules, IAM)"
     },
     "BackupAmiKey": {
         "Type": "String",
@@ -42,7 +44,7 @@
         "Type": "String",
         "Description": "Current environment for this version of BackupNanny"
     },
-    "PAT": {
+    "Pat": {
         "Type": "String",
         "Description": "Github Personal Access Token. This is used to generate a webhook for the Pipeline so that changes to your repo will trigger the pipeline to release the change",
         "NoEcho": true
@@ -70,7 +72,7 @@
       "Description": "AWS SES validated email in your AWS account to send the alerts as",
       "Type": "String"
     },
-    "TTLAmiCleanup": {
+    "TtlAmiCleanup": {
       "Description": "Mumber of days a BackupNanny backed-up AMI and set of snapshots should live. If more days have passed then this number, the AMI and Snapshots be deleted next time the CLEANUP_AMI Lambda function runs. Default is set to a fortnight, (two weeks).",
       "Type": "String",
       "Default": "14"
@@ -212,7 +214,7 @@
             {
               "Name": "TTL_AMI_CLEANUP",
               "Value": {
-                "Ref": "TTLAmiCleanup"
+                "Ref": "TtlAmiCleanup"
               }
             },
             {
@@ -250,16 +252,7 @@
         "Source": {
           "Type": "CODEPIPELINE",
           "BuildSpec": "buildlib/buildspec.yml"
-        },
-        "SecondarySources": [
-            {
-                "Location" : {
-                    "Fn::Sub": "${FLAWSBucket}/latest.zip"
-                },
-                "Type" : "S3",
-                "SourceIdentifier": "infra"
-            }
-        ]
+        }
       }
     },
     "AppPipeline": {
@@ -299,7 +292,7 @@
                     "Ref": "Branch"
                   },
                   "OAuthToken": {
-                    "Ref": "PAT"
+                    "Ref": "Pat"
                   },
                   "PollForSourceChanges": false
                 },
@@ -362,14 +355,14 @@
                 "Configuration": {
                   "ActionMode": "CHANGE_SET_REPLACE",
                   "ChangeSetName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}-ChangeSet"
+                    "Fn::Sub": "${StackName}-ChangeSet"
                   },
                   "RoleArn": {
                     "Fn::GetAtt": "CFNDeployRole.Arn"
                   },
                   "Capabilities": "CAPABILITY_IAM",
                   "StackName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}"
+                    "Ref": "StackName"
                   },
                   "TemplatePath": "CompiledCFNTemplate::template.json"
                 },
@@ -390,11 +383,11 @@
                 },
                 "Configuration": {
                   "StackName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}"
+                    "Ref": "StackName"
                   },
                   "ActionMode": "CHANGE_SET_EXECUTE",
                   "ChangeSetName": {
-                    "Fn::Sub": "${ApplicationName}-${Environment}-ChangeSet"
+                    "Fn::Sub": "${StackName}-ChangeSet"
                   },
                   "OutputFileName": "StackOutputs.json"
                 },
@@ -555,7 +548,7 @@
         "Authentication" : "GITHUB_HMAC",
         "AuthenticationConfiguration" : {
             "SecretToken": {
-                "Ref": "PAT"
+                "Ref": "Pat"
             }
         },
         "Filters" : [

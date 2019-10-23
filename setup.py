@@ -26,11 +26,11 @@ package_ignore = ['tests']
 
 setup(
     name="BackupNanny",
-    version="0.0.1",
+    version="0.0.2",
     author="forwardline",
     author_email="",
     cmdclass=get_cmdclass(needs_install),
-    description=('SalesForce Automation'),
+    description=('BackupNanny allows for backup/cleanup automation across AWS accounts and regions'),
     url="https://github.com/ForwardLine/backup-nanny",
     include_package_data=True,
     install_requires=install_requires,
@@ -38,4 +38,9 @@ setup(
     tests_require=install_requires,
     long_description=read('README.md'),
     packages=find_packages(exclude=package_ignore),
+    py_modules = ['deploy_nanny', 'buildlib'],
+    entry_points='''
+        [console_scripts]
+        deploy=deploy_nanny:cli
+    '''
 )
