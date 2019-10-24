@@ -4,12 +4,10 @@ phases:
     commands:
       - pip install -r requirements.txt
       - python setup.py nosetests
-      - cd backup_nanny
-      - chmod +x builder
-      - ./builder | tee builder-output.txt
+      - chmod +x buildlib/builder
+      - ./buildlib/builder | tee builder-output.txt
       - ARTIFACT_NAME=$(awk '{if ($1 == "Created") print $2 }' builder-output.txt)
       - aws s3 cp ${ARTIFACT_NAME} s3://${APP_BUCKET}
-      - cd ..
       - python -m buildlib.infrastructure > template.json
 artifacts:
   files:
