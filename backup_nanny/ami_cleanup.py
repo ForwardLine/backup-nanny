@@ -2,8 +2,8 @@
 
 from dotenv import load_dotenv
 
-from util.log import Log
-from util.backup_helper import BackupHelper
+from backup_nanny.util.log import Log
+from backup_nanny.util.backup_helper import BackupHelper
 
 
 def handler(event, context):
