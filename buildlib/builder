@@ -21,7 +21,7 @@ echo "Changing current working directory to backup_nanny directory"
 cd backup_nanny
 
 echo "Downloading dependencies into vendor directory"
-pip install --target=. -r requirements.txt
+pip install --target=../ -r requirements.txt
 
 cd ..
 
