@@ -1,6 +1,6 @@
 import click
-from dotenv import load_dotenv
 
+from backup_nanny.util.env_loader import ENVLoader
 from buildlib.helpers.logging_helper import LoggingHelper as Log
 from buildlib.nanny_deployer import NannyDeployer
 
@@ -9,7 +9,7 @@ from buildlib.nanny_deployer import NannyDeployer
 @click.option('--use-previous-value', help='If you are redeploying the Pipiline, you can pass this as False if you need to deploy different variables from your .env file', required=True, type=bool, default=True, show_default=True)
 def cli(region, use_previous_value):
     Log.setup_logging()
-    load_dotenv()
+    ENVLoader.run()
     nanny_deployer = NannyDeployer(region=region, use_previous_value=use_previous_value)
     nanny_deployer.deploy()
 

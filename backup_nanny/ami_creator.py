@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from dotenv import load_dotenv
-
+from backup_nanny.util.env_loader import ENVLoader
 from backup_nanny.util.log import Log
 from backup_nanny.util.backup_helper import BackupHelper
 
@@ -22,5 +21,5 @@ def main(event):
     return True
 
 if __name__ == '__main__':
-    load_dotenv()
+    ENVLoader.run()
     main('local')
