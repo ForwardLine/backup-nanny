@@ -119,5 +119,5 @@ class BackupHelper(object):
             self.log.info(e)
 
     def is_dry_run(self):
-        return True if self.ENVIRONMENT.upper() not in self.PRODUCTION_ENVIRONMENT.upper() else False
+        return True if not self.ENVIRONMENT or self.ENVIRONMENT.upper() not in self.PRODUCTION_ENVIRONMENT.upper() else False
 
