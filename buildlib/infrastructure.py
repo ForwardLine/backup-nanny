@@ -60,7 +60,7 @@ class BackupNanny(TemplateBase):
         ami_creator_lambda = self.lambda_helper.create_function(
             name_prefix='AMICreator',
             code=lambda_code,
-            handler='ami_creator.handler',
+            handler='backup_nanny.ami_creator.handler',
             timeout='20', # seconds
             environment=ami_creator_environment_variables,
             role=GetAtt(ami_creator_role, 'Arn'))
@@ -116,7 +116,7 @@ class BackupNanny(TemplateBase):
         ami_cleanup_lambda = self.lambda_helper.create_function(
             name_prefix='AMICleanup',
             code=lambda_code,
-            handler='ami_cleanup.handler',
+            handler='backup_nanny.ami_cleanup.handler',
             timeout='20', # seconds
             environment=ami_cleanup_environment_variables,
             role=GetAtt(ami_cleanup_role, 'Arn'))

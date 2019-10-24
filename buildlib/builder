@@ -12,10 +12,13 @@ echo "Creating vendor directory"
 mkdir vendor
 
 echo "Moving files to vendor directory"
-cp -r *.py *.txt util vendor
+cp -R backup_nanny __init__.py vendor
 
 echo "Changing current working directory to vendor directory"
 cd vendor
+
+echo "Changing current working directory to backup_nanny directory"
+cd backup_nanny
 
 echo "Downloading dependencies into vendor directory"
 pip install --target=. -r requirements.txt
@@ -23,8 +26,8 @@ pip install --target=. -r requirements.txt
 export artifact_name="backupnanny-${date_stamp}.zip"
 echo "Creating new package ${artifact_name}"
 zip -r ${artifact_name} *
-mv ${artifact_name} ../
+mv ${artifact_name} ../../
 
-cd ..
+cd ../..
 echo "Created ${artifact_name}"
 

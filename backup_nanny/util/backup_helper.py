@@ -3,9 +3,9 @@ from datetime import datetime
 
 from botocore.exceptions import ClientError
 
-from util.client_helper import ClientHelper
-from util.instance_reservation import InstanceReservation
-from util.image import Image
+from backup_nanny.util.client_helper import ClientHelper
+from backup_nanny.util.instance_reservation import InstanceReservation
+from backup_nanny.util.image import Image
 
 
 class BackupHelper(object):

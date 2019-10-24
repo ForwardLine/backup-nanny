@@ -2,7 +2,7 @@
 
 import sys
 
-from util.email_client import EmailClient
+from backup_nanny.util.email_client import EmailClient
 
 
 class Log(object):
