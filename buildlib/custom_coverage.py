@@ -7,4 +7,4 @@ class CustomCoverage(install):
 
     def run(self):
         install.run(self)
-        subprocess.call('./coverage')
+        subprocess.call('./buildlib/coverage')
