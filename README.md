@@ -1,4 +1,4 @@
-# BackupNanny
+# BackupNanny [![Build Status](https://travis-ci.org/ForwardLine/backup-nanny.svg?branch=master)](https://travis-ci.org/ForwardLine/backup-nanny)
 A series of Lambda functions that are used to automate AWS backups
 
 ## Details
