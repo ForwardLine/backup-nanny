@@ -12,3 +12,6 @@ omit =
     .eggs/*
     venv/*
     custom_coverage.py
+    vendor/*
+    **/*__init__.py
+    buildlib/*
