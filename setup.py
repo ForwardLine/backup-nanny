@@ -36,6 +36,7 @@ setup(
     install_requires=install_requires,
     test_suite="nose.collector",
     tests_require=install_requires,
+    license="Apache License 2.0",
     long_description=read('README.md'),
     packages=find_packages(exclude=package_ignore),
     py_modules = ['deploy_nanny', 'buildlib'],
